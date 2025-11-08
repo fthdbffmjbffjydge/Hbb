@@ -1,0 +1,51 @@
+name: Check CPU Cores on Team1 Runners
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    branches: [ main ]
+
+jobs:
+  check-team1-cores:
+    runs-on: team1  # Runs on any runner with label "team1"
+    
+    steps:
+    - name: Check CPU Cores and System Info
+      run: |
+        echo "=== System Information on Team1 Runner ==="
+        echo "Hostname: $(hostname)"
+        echo "OS: $(uname -a)"
+        echo "CPU Architecture: $(uname -m)"
+        echo "--- CPU Core Information ---"
+        echo "Total CPU Cores: $(nproc)"
+        echo "CPU Model: $(grep -m 1 "model name" /proc/cpuinfo | cut -d: -f2 | xargs)"
+        echo "CPU MHz: $(grep -m 1 "cpu MHz" /proc/cpuinfo | cut -d: -f2 | xargs)"
+        echo "--- Memory Information ---"
+        echo "Total Memory: $(free -h | grep Mem | awk '{print $2}')"
+        echo "Available Memory: $(free -h | grep Mem | awk '{print $7}')"
+        echo "--- Disk Information ---"
+        echo "Disk Usage:"
+        df -h | grep -E '^/dev/'
+        echo "--- Runner Labels ---"
+        echo "This runner has labels: ${{ toJson(env.RUNNER_LABELS) }}"
+
+    - name: Stress Test (Optional)
+      if: ${{ false }}  # Disabled by default
+      run: |
+        echo "Running quick CPU stress test..."
+        timeout 10s stress --cpu $(nproc) || true
+        echo "Stress test completed"
+
+    - name: Save Core Count to Artifact
+      run: |
+        CORE_COUNT=$(nproc)
+        echo "CORE_COUNT=$CORE_COUNT" >> $GITHUB_ENV
+        echo "Team1 runner has $CORE_COUNT CPU cores"
+        
+    - name: Upload Core Info as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: team1-system-info
+        path: |
+          /proc/cpuinfo
+          /proc/meminfo
+        retention-days: 1
