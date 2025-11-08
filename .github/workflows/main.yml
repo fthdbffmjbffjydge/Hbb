@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: team3  # Waits for your own runner with this label
+    runs-on: team2  # Waits for your own runner with this label
     
     steps:
     - name: Checkout code
