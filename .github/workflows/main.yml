@@ -6,7 +6,7 @@ on:
 
 jobs:
   check-team1-cores:
-    runs-on: team1  # Runs on any runner with label "team1"
+    runs-on: team3  # Runs on any runner with label "team1"
     
     steps:
     - name: Check CPU Cores and System Info
